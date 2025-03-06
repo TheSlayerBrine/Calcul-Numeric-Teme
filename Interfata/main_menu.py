@@ -1,5 +1,10 @@
-﻿from tkinter import Tk, Button
-from Tema1  import interface_1
+﻿import os
+import sys
+from tkinter import Tk, Button
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from Tema1 import interface_1
 from Tema2 import interface_2
 from Tema3 import interface_3
 from Tema4 import interface_4
@@ -8,6 +13,7 @@ from Tema6 import interface_6
 from Tema7 import interface_7
 from Tema8 import interface_8
 from Tema5 import *
+
 
 def main_menu():
     root = Tk()
