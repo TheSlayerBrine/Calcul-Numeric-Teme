@@ -3,7 +3,7 @@ import numpy as np
 from Tema1.polynomials import polynomials
 
 
-def placeholder_function():
+def compute_machine_precision():
     m = 1.0
     while 1.0 + 10**-m != 1.0:
         m += 1
@@ -12,7 +12,6 @@ def placeholder_function():
         return u
     else:
         return 0
-    
 
 def verify_associativity(u):
     x, y, z = 1.0, u/10, u/10
@@ -23,7 +22,20 @@ def verify_associativity(u):
         return True, left_side, right_side
     else:
         return False, left_side, right_side
-    
+
+
+def verify_multiplication_associativity(u):
+    a, b, c = 0.1, u/10, u/10
+
+    left_side = (a * b) * c
+    right_side = a * (b * c)
+
+    print("(a * b) * c =", left_side)
+    print("a * (b * c) =", right_side)
+    return left_side != right_side, left_side, right_side
+
+diff, left, right = verify_multiplication_associativity(compute_machine_precision())
+
 
 
 def compute_sin():
@@ -62,6 +74,4 @@ def compute_sin():
     print(timing)
         
     return sorted_polynomials,timing
-        
 
-compute_sin()
