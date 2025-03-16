@@ -1,22 +1,19 @@
 ﻿import numpy as np
 
-
-def matrix_validation(A):
+def validate_matrix(A):
+    """Verifică dacă matricea este pătratică și inversabilă."""
     n = len(A)
     
-    if not all(len(x) == n for x in A):
-        return "Invalid matrix. To make these operations the matrix has to be sqare"
+    if not all(len(row) == n for row in A):
+        raise ValueError("Invalid matrix. The matrix must be square.")
 
     if np.linalg.det(A) == 0:
-        return "Invalid matrix. To make these operations the matrix has to be non-singularity."
-    
-    return "OK"
+        raise ValueError("Invalid matrix. The matrix must be non-singular.")
 
-def dU_validation(dU, eps):
-    if not all([abs(dU[i]) >= eps for i in range(len(dU))]):
-        return "Invalid dU vector. The values from this vector have to be grater then 0 with a precision of {eps}"
-    return "OK"
-
+def validate_dU(dU, eps):
+    """Verifică dacă elementele din dU sunt mai mari decât eps."""
+    if not all(abs(value) >= eps for value in dU):
+        raise ValueError(f"Invalid dU vector. All values must be greater than {eps}.")
 
 def lu_decomposition_inplace(A,dU):
     n = len(A)
@@ -36,7 +33,6 @@ def lu_decomposition_inplace(A,dU):
     
     return LU
 
-
 def multiply_lu(LU):
     n = LU.shape[0]
     A_reconstructed = np.zeros((n, n))
@@ -54,8 +50,22 @@ def multiply_lu(LU):
 
 def verify_lu_decomposition(A,LU,eps=1e-10):
     A_reconstructed = multiply_lu(LU)
-    return np.allclose(A, A_reconstructed, atol=eps)
+    if not np.allclose(A, A_reconstructed, atol=eps):
+        raise ValueError("LU decomposition was incorect. A value is diffrent then the original matrix with more then {eps}")
 
+
+def compute_LU_decomposition(A, dU, eps):
+    try:
+        validate_matrix(A)
+        validate_dU(dU, eps)
+        
+        LU = lu_decomposition_inplace(A, dU)
+        verify_lu_decomposition(A,LU)
+        return LU
+    
+    except ValueError as e:
+        return str(e) 
+    
 
 def forward_substitution(LU, b):
     n = len(LU)
@@ -71,53 +81,54 @@ def backward_substitution(LU, y):
         x[i] = (y[i] - sum(LU[i, j] * x[j] for j in range(i + 1, n))) / LU[i, i]
     return x
 
-def solve_lu(A, dU, b):
+def solve_with_LU(A, dU, b):
     LU = lu_decomposition_inplace(A, dU)
     y = forward_substitution(LU, b)
     x = backward_substitution(LU, y)
     return x
-
 
 def determinant_from_lu(LU):
     detU = np.prod(np.diag(LU))
     return detU  # det(A) = det(L)*det(U) = 1*det(U)
 
 
-Ainit = np.array([[4,3], [5,2.75]], dtype=float)
-dU = [4,-1]
-b = np.array([10,6], dtype=float)  
+def show_determinant(A, dU, eps):
+    LU = compute_LU_decomposition(A, dU, eps)
+    
+    if isinstance(LU, str):  # Dacă LU este un mesaj de eroare
+        return f"Eroare: {LU}"
+    
+    detA = determinant_from_lu(LU)
+    return f"Determinantul matricei A calculat cu LU este: {detA}, iar determinantul calculat cu funcția librăriei este: {np.linalg.det(A)}"
+
+def show_computed_LU(A, dU, eps):
+    LU = compute_LU_decomposition(A, dU, eps)
+    
+    if isinstance(LU, str):  # Dacă e un mesaj de eroare, îl returnăm direct
+        return f"Eroare: {LU}"
+    return f"LU decomposition successful:\n{LU}"
+    
+
+def show_sistem_solved_with_normes(Ainit, dU, b, eps):
+    LU = compute_LU_decomposition(Ainit, dU, eps)
+    
+    if isinstance(LU, str):  # Dacă LU este un mesaj de eroare
+        return f"Eroare: {LU}"
+    
+    xLU = solve_with_LU(Ainit, dU, b)
+    norm_xLU = np.linalg.norm(np.dot(Ainit, xLU) - b, ord=2)  
 
 
-LU = lu_decomposition_inplace(Ainit, dU)
-print("LU Matrix:")
-print(LU)
-
-detA = determinant_from_lu(LU)
-print(f"Determinantul matricei A: {detA}")
-print(f"determinantul exact: {np.linalg.det(Ainit)}")
-
-xLu = solve_lu(Ainit, dU, b)
-print(f"Soluția aproximativă xLU: {xLu}")
-
-error = np.linalg.norm(np.dot(Ainit, xLu) - b, ord=2)  
+    x_lib = np.linalg.solve(Ainit, b)
+    norm_lib = np.linalg.norm(xLU - x_lib)
 
 
-x_lib = np.linalg.solve(Ainit, b)
-norm_LU_lib = np.linalg.norm(xLu - x_lib)
+    x_inv = np.dot(np.linalg.inv(Ainit), b)
+    norm_inv = np.linalg.norm(xLU - x_inv)
 
-A_inv = np.linalg.inv(Ainit)
-norm_LU_A_inv_b = np.linalg.norm(xLu - np.dot(A_inv, b))
-
-print (f"Approximate solution: {xLu} with error: {error}")
-print("Solution using inverse of matrix: ", x_lib)
-print("Norm ||xLU - xlib||2: ", norm_LU_lib)
-print("Norm ||xLU - A^(-1) * b||2: ", norm_LU_A_inv_b)
+    return f"Solution from LU {xLU} with norm  {norm_xLU}\n Solution from library function: {x_lib} with norm ||xLU - xlib||2: {norm_lib}\n Solution from inv matrix : {x_inv} with  norm ||xLU - A^(-1) * b||2: {norm_inv}"
 
 
-
-A_reconstructed = multiply_lu(LU)
-print("Matricea A reconstruită:")
-print(A_reconstructed)
-
-is_valid = verify_lu_decomposition(Ainit, LU)
-print("Verificare decompoziție LU corectă:", is_valid)
+def placeholder_function():
+    print("Functionality will be implemented here.")
+    return"Functionality will be implemented here."
