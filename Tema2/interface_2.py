@@ -2,59 +2,62 @@
 from tkinter import Toplevel
 from Tema2.implementation_2 import *
 
-Ainit = np.array([[4,3], [5,2.75]], dtype=float)
+A = np.array([
+    [4,3], 
+    [5,2.75]
+    ], dtype=float)
 dU = [4,-1]
 b = np.array([10,6], dtype=float)  
 eps = 1e-9
 
 
-def show_computed_LU(A, dU, eps):
+def show_computed_LU():
     LU = compute_LU_decomposition(A, dU, eps)
     
-    if isinstance(LU, str):  # Dacă e un mesaj de eroare, îl returnăm direct
+    if isinstance(LU, str):
         return f"Eroare: {LU}"
     
     n = LU.shape[0]
-    L = np.eye(n)  # Inițializare L cu 1 pe diagonală
-    U = np.zeros((n, n))  # Inițializare U cu 0
+    L = np.eye(n)  #1 pe diag
+    U = np.zeros((n, n))
     
     for i in range(n):
         for j in range(n):
             if i > j:  
-                L[i, j] = LU[i, j]  # Elemente sub diagonala principală
+                L[i, j] = LU[i, j]  #sub diag principala
             else:  
-                U[i, j] = LU[i, j]  # Elemente pe sau deasupra diagonalei
+                U[i, j] = LU[i, j]  #pe sau deasupra diag principale
 
     
-    return f"LU decomposition successful:\n{LU}\n Matrix L:\n {L}\n Matrix U:\n {U}"   
+    return f"Descompunerea lai A in LU a avut succes:\n{LU}\nMatricea L:\n {L}\nMatricea U:\n {U}"   
 
-def show_determinant(A, dU, eps):
+def show_determinant():
     LU = compute_LU_decomposition(A, dU, eps)
     
-    if isinstance(LU, str):  # Dacă LU este un mesaj de eroare
+    if isinstance(LU, str):
         return f"Eroare: {LU}"
     
     detA = determinant_from_lu(LU)
-    return f"Determinantul matricei A calculat cu LU este: {detA}, iar determinantul calculat cu funcția librăriei este: {np.linalg.det(A)}"
+    return f"Determinantul matricei A calculat cu LU: {detA}\nDeterminantul calculat cu functia librariei: {np.linalg.det(A)}"
 
-def show_sistem_solved_with_normes(Ainit, dU, b, eps):
-    LU = compute_LU_decomposition(Ainit, dU, eps)
+def show_sistem_solved_with_normes():
+    LU = compute_LU_decomposition(A, dU, eps)
     
-    if isinstance(LU, str):  # Dacă LU este un mesaj de eroare
+    if isinstance(LU, str):
         return f"Eroare: {LU}"
     
-    xLU = solve_with_LU(Ainit, dU, b)
-    norm_xLU = np.linalg.norm(np.dot(Ainit, xLU) - b, ord=2)  
+    xLU = solve_with_LU(A, dU, b)
+    norm_xLU = np.linalg.norm(np.dot(A, xLU) - b, ord=2)  
 
 
-    x_lib = np.linalg.solve(Ainit, b)
+    x_lib = np.linalg.solve(A, b)
     norm_lib = np.linalg.norm(xLU - x_lib)
 
 
-    x_inv = np.dot(np.linalg.inv(Ainit), b)
+    x_inv = np.dot(np.linalg.inv(A), b)
     norm_inv = np.linalg.norm(xLU - x_inv)
 
-    return f"Solution from LU {xLU} with norm  {norm_xLU}\n Solution from library function: {x_lib} with norm ||xLU - xlib||2: {norm_lib}\n Solution from inv matrix : {x_inv} with  norm ||xLU - A^(-1) * b||2: {norm_inv}"
+    return f"Solutia calculata cu descompunerea LU: {xLU}\ncu norma  {norm_xLU}\nSolutia calculata cu functia librariei: {x_lib}\ncu norma ||xLU - xlib||2: {norm_lib}\nSolutia calculata cu inversa matricei: {x_inv}\ncu norma ||xLU - A^(-1) * b||2: {norm_inv}"
 
 
 
@@ -66,6 +69,6 @@ class Iteration2(IterationBase):
         w.configure(bg="#6F7272")
         w.title("Iteration 2")
 
-        Iteration2.newButton(w, 0.5, 0.3, "Decompose in LU", "White", "#426E93", show_computed_LU(Ainit, dU, eps))
-        Iteration2.newButton(w, 0.5, 0.4, "Calculate determinant", "White", "#426E93", show_determinant(Ainit, dU, eps))
-        Iteration2.newButton(w, 0.5, 0.5, "Solve sistem and show normes", "White", "#426E93", show_sistem_solved_with_normes(Ainit, dU, b, eps))
+        Iteration2.newButton(w, 0.5, 0.3, "Descompunere in LU", "White", "#426E93", show_computed_LU)
+        Iteration2.newButton(w, 0.5, 0.4, "Calculare determinant", "White", "#426E93", show_determinant)
+        Iteration2.newButton(w, 0.5, 0.5, "Rezolvare sistem", "White", "#426E93", show_sistem_solved_with_normes)

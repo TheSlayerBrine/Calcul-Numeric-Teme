@@ -1,5 +1,4 @@
-﻿
-from Interfata.tema_x import IterationBase
+﻿from Interfata.tema_x import IterationBase
 from tkinter import Toplevel,Label
 from Tema1.implementation_1 import *
 

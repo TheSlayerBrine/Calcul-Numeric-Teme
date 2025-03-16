@@ -16,8 +16,6 @@ def compute_machine_precision():
 def verify_associativity(u):
     x, y, z = 1.0, u/10, u/10
     left_side, right_side = (x + y) + z, x + (y + z)
-    print("(x+y)+z =", left_side)
-    print("x+(y+z) =", right_side)
     if left_side == right_side:
         return True, left_side, right_side
     else:
@@ -30,8 +28,6 @@ def verify_multiplication_associativity(u):
     left_side = (a * b) * c
     right_side = a * (b * c)
 
-    print("(a * b) * c =", left_side)
-    print("a * (b * c) =", right_side)
     return left_side != right_side, left_side, right_side
 
 diff, left, right = verify_multiplication_associativity(compute_machine_precision())
@@ -66,12 +62,10 @@ def compute_sin():
         for x in x_values:
             _=P(x)
         end_time = time.time()
-        print(f"Time for {P.__name__}: {start_time} - {end_time} seconds")
         calculation_time = end_time - start_time
         timing.append((P.__name__, calculation_time))
 
     timing.sort(key=lambda item: item[1])
-    print(timing)
         
     return sorted_polynomials,timing
 

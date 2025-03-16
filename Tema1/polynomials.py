@@ -36,11 +36,3 @@ def P7(x): return compute_polynomial(x, c_values[:5])
 def P8(x): return compute_polynomial(x, c_values[:6])
 
 polynomials = [P1,P2,P3,P4,P5,P6,P7,P8]
-
-
-x_test = 1048 * 3.14/11
-x_reduced = x_test % (2 * math.pi)
-
-print(P5(x_reduced))
-print(math.sin(x_reduced))
-print(abs(P5(x_reduced) - math.sin(x_reduced)))
