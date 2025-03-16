@@ -7,7 +7,7 @@ def validate_matrix(A):
         raise ValueError("Matrice invalida. Matricea introdusa trebuie sa fie patratica. ")
 
     if np.linalg.det(A) == 0:
-        raise ValueError("Matrice invalida. Matricea introdusa trebuie sa fie inversabila. ")
+        raise ValueError("Matrice invalida. Matricea introdusa trebuie sa fie nesingulara. ")
 
 def validate_dU(dU, eps):
     
@@ -33,7 +33,7 @@ def lu_decomposition_inplace(A,dU):
 
 def multiply_lu(LU):
     n = LU.shape[0]
-    A_reconstructed = np.zeros((n, n))
+    product = np.zeros((n, n))
     
     for i in range(n):
         for j in range(n):
@@ -42,13 +42,13 @@ def multiply_lu(LU):
                 L_ik = LU[i, k] if k < i else (1.0 if k == i else 0)  # Elemente din L
                 U_kj = LU[k, j] if k <= j else 0  # Elemente din U
                 sum_LU += L_ik * U_kj
-            A_reconstructed[i, j] = sum_LU
+            product[i, j] = sum_LU
     
-    return A_reconstructed
+    return product
 
 def verify_lu_decomposition(A,LU,eps=1e-10):
-    A_reconstructed = multiply_lu(LU)
-    if not np.allclose(A, A_reconstructed, atol=eps):
+    reconstructed_A = multiply_lu(LU)
+    if not np.allclose(A, reconstructed_A, atol=eps):
         raise ValueError("Descompunere LU incorecta. O valoare e diferita fata de cea originala cu mai mult de {eps}")
 
 
@@ -66,6 +66,7 @@ def compute_LU_decomposition(A, dU, eps):
     
 
 def forward_substitution(LU, b):
+    #Ly=b
     n = len(LU)
     y = np.zeros(n)
     for i in range(n):
@@ -79,8 +80,7 @@ def backward_substitution(LU, y):
         x[i] = (y[i] - sum(LU[i, j] * x[j] for j in range(i + 1, n))) / LU[i, i]
     return x
 
-def solve_with_LU(A, dU, b):
-    LU = lu_decomposition_inplace(A, dU)
+def solve_with_LU(LU, b):
     y = forward_substitution(LU, b)
     x = backward_substitution(LU, y)
     return x

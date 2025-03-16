@@ -1,6 +1,7 @@
 ﻿from Interfata.tema_x import IterationBase
 from tkinter import Toplevel
 from Tema2.implementation_2 import *
+from Tema2.bonus import *
 
 A = np.array([
     [4,3], 
@@ -46,7 +47,7 @@ def show_sistem_solved_with_normes():
     if isinstance(LU, str):
         return f"Eroare: {LU}"
     
-    xLU = solve_with_LU(A, dU, b)
+    xLU = solve_with_LU(LU, b)
     norm_xLU = np.linalg.norm(np.dot(A, xLU) - b, ord=2)  
 
 
@@ -61,6 +62,25 @@ def show_sistem_solved_with_normes():
 
 
 
+
+def show_computed_LU_vectors():
+    vector_L,vector_U = compute_LU_decomposition_vectors(A, dU, eps)
+
+    if isinstance(vector_L, str) or isinstance(vector_U, str):
+        return f"Eroare: {vector_L if isinstance(vector_L, str) else vector_U}"
+    
+    return f"Descompunerea lai A in vectorii L si U a avut succes.\nVectorul L:\n {vector_L}\nVectorul U:\n {vector_U}"   
+
+def show_sistem_solved_vectors():
+    vector_L,vector_U = compute_LU_decomposition_vectors(A, dU, eps)
+    
+    if isinstance(vector_L, str) or isinstance(vector_U, str):
+        return f"Eroare: {vector_L if isinstance(vector_L, str) else vector_U}"
+    
+    xLU = solve_with_LU_vectors(A,vector_L,vector_U, b)
+    return f"Solutia calculata cu descompunerea LU: {xLU}"
+
+
 class Iteration2(IterationBase):
     @staticmethod
     def open():
@@ -72,3 +92,5 @@ class Iteration2(IterationBase):
         Iteration2.newButton(w, 0.5, 0.3, "Descompunere in LU", "White", "#426E93", show_computed_LU)
         Iteration2.newButton(w, 0.5, 0.4, "Calculare determinant", "White", "#426E93", show_determinant)
         Iteration2.newButton(w, 0.5, 0.5, "Rezolvare sistem", "White", "#426E93", show_sistem_solved_with_normes)
+        Iteration2.newButton(w, 0.5, 0.6, "Descompunere in vectori L, U", "White", "#426E93", show_computed_LU_vectors)
+        Iteration2.newButton(w, 0.5, 0.7, "Rezolvare sistem cu vectori", "White", "#426E93", show_sistem_solved_vectors)
