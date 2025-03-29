@@ -4,11 +4,12 @@ from Tema2.implementation_2 import *
 from Tema2.bonus import *
 
 A = np.array([
-    [4,3], 
-    [5,2.75]
+    [4,2,3], 
+    [2,7,5.5],
+    [6,3,12.5]
     ], dtype=float)
-dU = [4,-1]
-b = np.array([10,6], dtype=float)  
+dU = [2,3,4]
+b = np.array([21.6,33.6,51.6], dtype=float)  
 eps = 1e-9
 
 
@@ -19,12 +20,15 @@ def show_computed_LU():
         return f"Eroare: {LU}"
     
     n = LU.shape[0]
-    L = np.eye(n)  #1 pe diag
+    L = np.zeros((n,n))  
     U = np.zeros((n, n))
+    for i in range(n):
+        U[i,i] = dU[i]
     
+
     for i in range(n):
         for j in range(n):
-            if i > j:  
+            if i >= j:  
                 L[i, j] = LU[i, j]  #sub diag principala
             else:  
                 U[i, j] = LU[i, j]  #pe sau deasupra diag principale

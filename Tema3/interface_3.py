@@ -1,6 +1,7 @@
 ﻿from Interfata.tema_x import IterationBase
 from tkinter import Toplevel
-from Tema3.implementation_3 import *
+from Tema3.implementation_ds import *
+from Tema3.implementation_crs import *
 
 
 class Iteration3(IterationBase):
