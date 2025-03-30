@@ -1,6 +1,9 @@
 
 def display_diagonal_matrix(n, diag, sparse_lines):
-    print("Matrix stored using method 1:")
+    matrix_str = f"Matrix in Diagonal Storage format ({n}x{n}):\n\n"
     for i in range(n):
         line = [(j, v) for j, v in sorted(sparse_lines[i].items())]
-        print(f"d[{i}] = {diag[i]}", f" line {i}:  ", line)
+        matrix_str += f"d[{i}] = {diag[i]}\n"
+        matrix_str += f" line {i}:  {line}\n"
+    
+    return matrix_str

@@ -1,11 +1,14 @@
 def display_crs_matrix(valori, ind_col, inceput_linii):
-    print("Reprezentare CRS a matricei rare:")
+    n = len(inceput_linii) - 1
+    matrix_str = f"Matrix in CRS format ({n}x{n}):\n\n"
     
-    print("Vectorul valori (elemente nenule):")
-    print(valori)
-
-    print("\nVectorul ind_col (indicii coloanelor elementelor nenule):")
-    print(ind_col)
-
-    print("\nVectorul inceput_linii (startul fiecărei linii în vectorii valori/ind_col):")
-    print(inceput_linii)
+    matrix_str += "Values array:      "
+    matrix_str += " ".join(f"{val:6.2f}" for val in valori) + "\n"
+    
+    matrix_str += "Column indices:    "
+    matrix_str += " ".join(f"{idx:6d}" for idx in ind_col) + "\n"
+    
+    matrix_str += "Row start indices: "
+    matrix_str += " ".join(f"{idx:6d}" for idx in inceput_linii) + "\n"
+    
+    return matrix_str

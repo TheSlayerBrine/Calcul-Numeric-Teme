@@ -19,8 +19,8 @@ class IterationBase:
             mybutton['background'] = fcolor
             mybutton['foreground'] = bcolor
 
-        def on_click(e):
-            open_new_window()
+        #def on_click(e):
+        #    open_new_window()
 
         mybutton = Button(parent, width=30, height=2, border=0,
                           activebackground=bcolor, activeforeground=fcolor,
@@ -28,4 +28,4 @@ class IterationBase:
         mybutton.bind("<Enter>", on_enter)
         mybutton.bind("<Leave>", on_leave)
         mybutton.place(relx=x, rely=y, anchor=CENTER)
-        mybutton.bind("<Button-1>", on_click)
+        #mybutton.bind("<Button-1>", on_click)

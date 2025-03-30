@@ -3,32 +3,39 @@ import os
 
 def read_crs_matrix(fisier):
     with open(fisier, 'r') as f:
-        n = int(f.readline().strip())  # Citim dimensiunea
-        valori = []  # Vectorul pentru valorile nenule
-        ind_col = []  # Vectorul pentru indicii de coloană
-        inceput_linii = [0] * (n + 1)  # Inițializăm început_linii
-        nr_elemente = 0  # Contor pentru numărul total de elemente nenule
-
+        n = int(f.readline().strip())  
+        temp_matrix = {}
+        
         for linie in f:
-            linie = linie.replace(" ,", ",")  # Eliminăm spațiile după virgulă
-            parti = linie.strip().split(",")  # Acum separăm corect după virgulă
+            linie = linie.replace(" ,", ",")  
+            parti = linie.strip().split(",")  
             
             if len(parti) != 3:
-                print(f"Linie incorectă ignorată: {linie.strip()}")
-                continue  # Trecem la următoarea linie
+                continue  
             
             try:
                 valoare, i, j = float(parti[0]), int(parti[1]), int(parti[2])
+                if i < 0 or i >= n or j < 0 or j >= n:
+                    print(f"Indici invalizi: i={i}, j={j}")
+                    continue
+                    
+                if i not in temp_matrix:
+                    temp_matrix[i] = {}
+                temp_matrix[i][j] = temp_matrix[i].get(j, 0) + valoare
+                
             except ValueError:
                 print(f"Eroare la conversie: {linie.strip()}")
-                continue  # Trecem la următoarea linie
-
-            valori.append(valoare)  # Adăugăm valoarea nenulă
-            ind_col.append(j)  # Adăugăm indicele de coloană
-            inceput_linii[i + 1] += 1  # Incrementăm numărul de elemente pentru linia i
+                continue  
         
-        # Calculăm început_linii(i+1) ca sumă cumulativă
-        for i in range(1, n + 1):
-            inceput_linii[i] += inceput_linii[i - 1]
+        valori = []
+        ind_col = []
+        inceput_linii = [0] * (n + 1)
+        
+        for i in range(n):
+            if i in temp_matrix:
+                for j in sorted(temp_matrix[i].keys()):
+                    valori.append(temp_matrix[i][j])
+                    ind_col.append(j)
+            inceput_linii[i + 1] = len(valori)
         
         return n, valori, ind_col, inceput_linii

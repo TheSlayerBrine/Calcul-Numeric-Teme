@@ -2,16 +2,15 @@ import collections
 
 def read_diagonal_matrix(file):
     with open(file, 'r') as f:
-        n = int(f.readline().strip())  # Read the size
-        diag = [0] * n  # Initialize the diagonal vector
-        sparse_lines = collections.defaultdict(lambda: collections.defaultdict(float))  # Sparse vectors with automatic summation
+        n = int(f.readline().strip())  
+        diag = [0] * n  
+        sparse_lines = collections.defaultdict(lambda: collections.defaultdict(float))  
         
         for line in f:
-            line = line.replace(" ,", ",")  # Remove spaces after commas
-            parts = line.strip().split(",")  # Now correctly split by comma
+            line = line.replace(" ,", ",")  
+            parts = line.strip().split(",")  
             
             if len(parts) != 3:
-                print(f"Incorrect line ignored: {line.strip()}")
                 continue  
             
             try:
@@ -21,8 +20,8 @@ def read_diagonal_matrix(file):
                 continue 
             
             if i == j:
-                diag[i] += value  # Add to diagonal
+                diag[i] += value  
             else:
-                sparse_lines[i][j] += value  # Add to sparse matrix entries
+                sparse_lines[i][j] += value  
         
         return n, diag, sparse_lines

@@ -15,16 +15,16 @@ def validate_diagonal_crs(n, valori, ind_col, inceput_linii):
     return True
 
 
-def gauss_seidel_crs(n, valori, ind_col, inceput_linii, b, tolerance=1e-10, max_iterations=10000):
-    xGS = [0] * n  # Inițializare cu 0 pentru toate elementele
-    iterations = 0
-
-    for k in range(max_iterations):
+def gauss_seidel_crs(n, valori, ind_col, inceput_linii, b, eps=1e-10, kmax=10000):
+    xGS = [0] * n  # Inițializare soluție
+    k = 0  # Număr de iterații
+    
+    while k <= kmax:
         max_diff = 0.0  
 
         for i in range(n):
             suma_ax = 0.0
-            diag = 0.0  # Elementul diagonal
+            diag = 0.0  
             
             start = inceput_linii[i]  
             end = inceput_linii[i + 1]  
@@ -32,43 +32,32 @@ def gauss_seidel_crs(n, valori, ind_col, inceput_linii, b, tolerance=1e-10, max_
             for idx in range(start, end):
                 j = ind_col[idx]  
                 if j == i:
-                    diag = valori[idx]  # Identificăm valoarea de pe diagonală
+                    diag = valori[idx]  
                 else:
-                    suma_ax += valori[idx] * xGS[j]  # Calculăm suma A[i, j] * xGS[j]
+                    suma_ax += valori[idx] * xGS[j]  # suma A[i, j] * xGS[j]
             
-            # Evităm împărțirea la zero
-            if diag == 0:
-                return "Failure: Zero diagonal element"
-            
-            # Calculăm noua valoare pentru xGS[i]
             new_x_i = (b[i] - suma_ax) / diag
             
             diff = abs(new_x_i - xGS[i])
-            
             if diff > max_diff:
                 max_diff = diff
 
             xGS[i] = new_x_i
         
+        print(f"Iterația {k}: xGS = {xGS}")
         
-        if (max_diff < tolerance) :
-            break
+        if max_diff < eps:
+            print("xc aprox = x* (soluția convergentă a fost găsită)")
+            return xGS, k
+        elif max_diff > 10**8:
+            print("Divergență detectată.")
+            return None, k
 
-        iterations += 1
+        k += 1
     
-    return xGS, iterations
+    print("Divergență: numărul maxim de iterații atins.")
+    return None, k
 
-
-def compute_residual_norm(self, x, b) -> float:
-        Ax = [0.0] * self.n
-        for i in range(self.n):
-            for idx in range(self.start_line[i], self.start_line[i+1]):
-                j = self.ind_col[idx]
-                Ax[i] += self.values[idx] * x[j]
-
-        residual = [Ax[i] - b[i] for i in range(self.n)]
-
-        return max(abs(val) for val in residual)
 
 def verify_crs_solution(n, valori, ind_col, inceput_linii, xGS, b):
     eroare_maxima = 0.0
