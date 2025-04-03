@@ -41,22 +41,31 @@ def li_li_variant1_inversion(A, epsilon=1e-10, kmax=1000):
     """
     n = A.shape[0]
     I = np.eye(n)
-    row_norm = np.max(np.sum(np.abs(A), axis=1))  # infinity norm
-    col_norm = np.max(np.sum(np.abs(A), axis=0))  # 1-norm
-    alpha = 1.0 / (row_norm * col_norm)
-    V = alpha * A.T.copy()
+    A_inf = np.linalg.norm(A, ord=np.inf)
+    A_1 = np.linalg.norm(A, ord=1)
+    alpha = 1.0 / (A_1 * A_inf)
+    V0 = V1 = alpha * A.T.copy()
+    
+    k = 1
+    while(k < kmax):
+        V0 = V1
+        
+        inner_term = 3 * I - A @ V0
+        full_term = 3 * I - A @ V0 @ inner_term
+        V1 = V0 @ full_term
 
-    for k in range(1, kmax + 1):
-        inner_term = 3 * I - A @ V
+        difV = np.linalg.norm(V1 - V0, ord=1)
+        if difV < epsilon:
+            print("V1 aprox = A^-1 (soluția convergentă a fost găsită)")
+            return V1, k
+        if  difV > 10**10:
+            print("Divergență detectată.")
+            return None, k
+        k += 1  
 
-        full_term = 3 * I - A @ V @ inner_term
-        V_next = V @ full_term
-        res_norm = np.linalg.norm(A @ V_next - I, ord=1)
-        if res_norm < epsilon or res_norm > 10**10:
-            return V_next, k
-        V = V_next
+    print("Divergență: numărul maxim de iterații atins.")
+    return None, k
 
-    return V, kmax
 
 def li_li_variant2_inversion(A, epsilon=1e-10, kmax=1000):
     """
@@ -67,16 +76,18 @@ def li_li_variant2_inversion(A, epsilon=1e-10, kmax=1000):
     """
     n = A.shape[0]
     I = np.eye(n)
-    row_norm = np.max(np.sum(np.abs(A), axis=1))  # infinity norm
-    col_norm = np.max(np.sum(np.abs(A), axis=0))  # 1-norm
-    alpha = 1.0 / (row_norm * col_norm)
-    V = alpha * A.T.copy()
+    A_inf = np.linalg.norm(A, ord=np.inf)
+    A_1 = np.linalg.norm(A, ord=1)
+    alpha = 1.0 / (A_1 * A_inf)
+    V0 = V1 = alpha * A.T.copy()
 
-    for k in range(1, kmax + 1):
+    k = 1
+    while(k < kmax):
+        V0 = V1
         # Compute (Iₙ - VₖA)
-        term1 = I - V @ A
+        term1 = I - V0 @ A
         # Compute (3Iₙ - VₖA)
-        term2 = 3 * I - V @ A
+        term2 = 3 * I - V0 @ A
         # Compute (3Iₙ - VₖA)²
         term2_squared = term2 @ term2
         # Compute 1/4(Iₙ - VₖA)(3Iₙ - VₖA)²
@@ -84,13 +95,18 @@ def li_li_variant2_inversion(A, epsilon=1e-10, kmax=1000):
         # Compute (Iₙ + 1/4(Iₙ - VₖA)(3Iₙ - VₖA)²)
         final_term = I + combined_term
         # Compute final result
-        V_next = final_term @ V
-        res_norm = np.linalg.norm(A @ V_next - I, ord=1)
-        if res_norm < epsilon or res_norm > 10**10:
-            return V_next, k
-        V = V_next
+        V1 = final_term @ V0
+        difV = np.linalg.norm(V1@A - I, ord=1)
+        if difV < epsilon:
+            print("V1 aprox = A^-1 (soluția convergentă a fost găsită)")
+            return V1, k
+        if  difV > 10**10:
+            print("Divergență detectată.")
+            return None, k
+        k += 1  
 
-    return V, kmax
+    print("Divergență: numărul maxim de iterații atins.")
+    return None, k
 
 
 
