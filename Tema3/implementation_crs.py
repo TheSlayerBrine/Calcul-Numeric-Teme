@@ -14,6 +14,9 @@ def compute_system(matrix_file, vector_file):
     """
     try:
         n, valori, ind_col, inceput_linii = read_crs_matrix(matrix_file)
+        verify_first_column(n, valori, ind_col, inceput_linii)
+        matrixA = display_crs_matrix(valori, ind_col, inceput_linii)
+        print(matrixA)
         
         if validate_diagonal_crs(n, valori, ind_col, inceput_linii):
             b = read_b_vector(vector_file)

@@ -7,7 +7,7 @@ def validate_diagonal_ds(diag):
     return True
 
 def gauss_seidel_ds(n, diag, sparse_lines, b, eps=1e-10, kmax=10000):
-    xGS = [0] * n  
+    xGS = [10] * n  
     k = 0  
     
     while k <= kmax:
@@ -28,6 +28,7 @@ def gauss_seidel_ds(n, diag, sparse_lines, b, eps=1e-10, kmax=10000):
             xGS[i] = new_val
         
         print(f"Iterația {k}: xGS = {xGS}")
+        print(verify_ds_solution(n, diag, sparse_lines, xGS, b))
         
         if max_diff < eps:
             print("Solutie atinsa")
@@ -52,5 +53,22 @@ def verify_ds_solution(n, diag, sparse_lines, xGS, b):
         eroare = abs(suma_ax - b[i])  
         eroare_maxima = max(eroare_maxima, eroare)  
     
-    print(f"Norma ||GS - Ax - b||_inf = {eroare_maxima}")
+    print(f"Norma ||Ax - b||_inf = {eroare_maxima}")
     return eroare_maxima
+
+def verify_first_column_ds(n, diag, sparse_lines):
+
+    primul_element = diag[0]
+    suma = 0.0
+    
+    for i in range(1, n):  
+            for j, val in sparse_lines[i].items():
+                if j == 0:
+                    suma += val
+    if(primul_element < suma):
+        print("mai mic")
+    else:
+        print("mai mare")
+    return primul_element, suma
+
+

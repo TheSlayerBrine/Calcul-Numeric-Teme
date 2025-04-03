@@ -26,7 +26,7 @@ class Iteration3(IterationBase):
         Label(control_frame, text="Matrix:", bg="#6F7372", fg="white").pack(side='left', padx=10)
         matrix_var = StringVar(w)
         matrix_var.set("a_1")
-        matrix_menu = OptionMenu(control_frame, matrix_var, "a_1", "a_2", "a_3", "a_4", "a_5", "a_t")
+        matrix_menu = OptionMenu(control_frame, matrix_var, "a_1", "a_2", "a_3", "a_4", "a_5", "a_t", "a_6", "a_7")
         matrix_menu.pack(side='left', padx=10)
 
         # Format selection

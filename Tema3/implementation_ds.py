@@ -13,6 +13,9 @@ def compute_system(matrix_file, vector_file):
     
     try:
         n, diag, sparse_lines = read_diagonal_matrix(matrix_file)
+        print(f"Matrix file: {matrix_file}")
+        verify_first_column_ds(n, diag, sparse_lines)
+        print(f"Matrix file: {matrix_file}")
         
         if validate_diagonal_ds(diag):
             b = read_b_vector(vector_file)
@@ -21,6 +24,7 @@ def compute_system(matrix_file, vector_file):
                 return False, "Sistemul este divergent"
             
             verification = verify_ds_solution(n, diag, sparse_lines, xGS, b)
+            
             return True, {
                 'verification': verification,
                 'iterations': iterations,
