@@ -1,6 +1,4 @@
 ﻿import numpy as np
-from Tema4.read_matrix import read_rectangular_matrix,read_square_matrix
-
 
 def newton_schulz(A, epsilon = 1e-10, kmax = 1000):
     """
@@ -108,8 +106,6 @@ def li_li_variant2_inversion(A, epsilon=1e-10, kmax=1000):
     print("Divergență: numărul maxim de iterații atins.")
     return None, k
 
-
-
 def non_square_newton_schulz(A, epsilon=1e-10, kmax=1000):
     """
     Pseudoinverse
@@ -153,3 +149,110 @@ def non_square_newton_schulz(A, epsilon=1e-10, kmax=1000):
     return X, iterations, rectangular_norm  
 
 
+def generate_special_matrix(n):
+    A = np.eye(n)  # Start with identity matrix
+    for i in range(n-1):
+        A[i, i+1] = 2  # Set superdiagonal elements to 2
+    return A
+
+
+
+def analyze_special_matrix_inverse(max_n=10, epsilon=1e-10, kmax=1000):
+    
+    results = {}
+    
+    # Test matrices of different dimensions
+    for n in range(2, max_n + 1):
+        # Generate the special matrix
+        A = generate_special_matrix(n)
+        
+        # Compute inverse
+        inverse, iterations = newton_schulz(A, epsilon, kmax)
+        
+        if inverse is not None:
+            results[n] = (A, inverse)
+            
+            # Verify the inverse
+            I = np.eye(n)
+            error = np.linalg.norm(A @ inverse - I, ord=1)
+            print(f"Dimension {n}: Inverse found in {iterations} iterations. Error: {error:.2e}")
+            
+        else:
+            print(f"Dimension {n}: Failed to converge after {iterations} iterations.")
+    
+    # Analyze the pattern in the inverses
+    if results:
+        print(results)  
+        
+        formula_function = lambda i, j: (-2)**(j-i) if i <= j else 0
+        return results, formula_function
+    
+    return results, None
+
+def inverse_pattern_description(results):
+    pattern = []
+    
+    # Get a sample of inverses to analyze
+    dimensions = sorted(results.keys())
+    if not dimensions:
+        return "No pattern could be deduced. No convergent solutions found."
+    # Look at the pattern of values in each inverse
+    
+    
+    pattern.append("- Main diagonal: All elements are 1")
+    pattern.append("- First superdiagonal: All elements are -2")
+    pattern.append("- Second superdiagonal: All elements are 4 (2²)")
+    pattern.append("- Third superdiagonal: All elements are -8 (-2³)")
+    pattern.append("- General form for kth superdiagonal: (-2)^k")
+    pattern.append("- All elements below the main diagonal are 0")
+    
+    # general formula
+    pattern.append("\nGeneral formula for the inverse:")
+    pattern.append("A⁻¹[i,j] = 0 if i > j (lower triangular part)")
+    pattern.append("A⁻¹[i,j] = 1 if i = j (main diagonal)")
+    pattern.append("A⁻¹[i,j] = (-2)^(j-i) if i < j (upper triangular part)")
+    
+    return "\n".join(pattern)
+
+
+
+def generate_inverse_from_formula(n, formula_function=None):
+    inverse = np.zeros((n, n))
+    
+    # Use the provided formula function or default to the known formula
+    if formula_function is None:
+        formula_function = lambda i, j: 0 if i > j else 1 if i == j else (-2)**(j-i)
+    
+    for i in range(n):
+        for j in range(n):
+            inverse[i, j] = formula_function(i, j)
+            
+    return inverse
+
+def compare_formula_vs_iterative(n, method='newton_schulz', epsilon=1e-10, kmax=1000, formula_function=None):
+    
+    # Generate the special matrix
+    A = generate_special_matrix(n)
+    
+    # Generate inverse using the formula
+    formula_inverse = generate_inverse_from_formula(n, formula_function)
+    
+    # Calculate inverse using the specified iterative method
+    if method == 'newton_schulz':
+        iterative_inverse, iterations = newton_schulz(A, epsilon, kmax)
+    elif method == 'li_li_v1':
+        iterative_inverse, iterations = li_li_variant1_inversion(A, epsilon, kmax)
+    elif method == 'li_li_v2':
+        iterative_inverse, iterations = li_li_variant2_inversion(A, epsilon, kmax)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+    
+    if iterative_inverse is None:
+        return A, formula_inverse, None, None, iterations
+    
+    # Calculate norm of difference between the two inverses
+    difference_norm = np.linalg.norm(formula_inverse - iterative_inverse, ord=1)
+    
+    print(f"Difference between inverses: {difference_norm:.2e}")
+    
+    return A, formula_inverse, iterative_inverse, difference_norm, iterations
