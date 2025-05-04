@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Optional
+from typing import Optional, Tuple
 
 def create_sparse_matrix(n, m: Optional[int] = None):
     """
@@ -165,7 +165,22 @@ def read_matrix_from_file(fisier):
             inceput_linii[i + 1] = len(valori)
         
         return n, valori, ind_col, inceput_linii
-def generate_random_symmetric(n: int, density: float = 0.1) :
+
+def generate_random_sparse_symmetric_positive1(n: int, density: float = 0.1) -> Tuple[list, list, list, int]:
+    """
+    Generate a random sparse symmetric positive definite matrix.
+    
+    Parameters:
+        n: Size of the matrix
+        density: Desired density of non-zero elements (between 0 and 1)
+        
+    Returns:
+        Tuple containing:
+        - values: List of non-zero values
+        - col_indices: List of column indices
+        - row_ptr: Row pointer array
+        - n: Matrix dimension
+    """
     if density <= 0 or density > 1:
         raise ValueError("Density must be between 0 and 1")
 

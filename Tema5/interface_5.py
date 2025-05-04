@@ -6,8 +6,8 @@ from Interfata.tema_x import IterationBase
 from tkinter import Toplevel, Label, Entry, Button, Text, Scrollbar, Frame, StringVar, OptionMenu, filedialog, IntVar, Scale, HORIZONTAL, messagebox
 import numpy as np
 import time
-from Tema5.implementation_5 import (power_method, verify_symmetry, calculate_residual_norm)
-from Tema5.sparse_matrix import (dump_to_file,generate_random_symmetric,read_matrix_from_file)
+from Tema5.implementation_5 import (power_method, verify_symmetry, calculate_residual_norm, custom_rank, custom_condition_number)
+from Tema5.sparse_matrix import (dump_to_file, generate_random_sparse_symmetric_positive1, read_matrix_from_file)
 
 
 class Iteration5(IterationBase):
@@ -78,7 +78,7 @@ class Iteration5(IterationBase):
                 result_text.insert('end', f"Generating random sparse symmetric matrix with dimension {n} and density {density:.2%}...\n")
                 
                 start_time = time.time()
-                values, col_indices, row_ptr, n = generate_random_symmetric(n, density)
+                values, col_indices, row_ptr, n = generate_random_sparse_symmetric_positive1(n, density)
                 end_time = time.time()
                 
                 # Basic statistics
@@ -210,15 +210,32 @@ class Iteration5(IterationBase):
                command=select_file).grid(row=0, column=2, padx=20, pady=10)
     
     @staticmethod
-    def compare_methods():
-        """Compare power method results from generated and file-based matrices"""
+    def svd_analysis():
+        """Perform SVD analysis on a matrix"""
         w = Toplevel()
         w.geometry("800x600")
         w.configure(bg="#6F7572")
-        w.title("Compare File and Generated Matrices")
+        w.title("SVD Analysis")
+        
+        # Create frame for controls
+        control_frame = Frame(w, bg="#6F7572")
+        control_frame.pack(pady=20)
+        
+        # Matrix dimensions
+        Label(control_frame, text="Rows (n):", bg="#6F7572", fg="white").grid(row=0, column=0, padx=10, pady=10)
+        n_var = IntVar(w)
+        n_var.set(100)
+        n_entry = Entry(control_frame, textvariable=n_var, width=8)
+        n_entry.grid(row=0, column=1, padx=10, pady=10)
+        
+        Label(control_frame, text="Columns (p):", bg="#6F7572", fg="white").grid(row=0, column=2, padx=10, pady=10)
+        p_var = IntVar(w)
+        p_var.set(200)
+        p_entry = Entry(control_frame, textvariable=p_var, width=8)
+        p_entry.grid(row=0, column=3, padx=10, pady=10)
         
         # Create text widget for results
-        result_text = Text(w, height=35, width=80)
+        result_text = Text(w, height=30, width=80)
         result_text.pack(pady=20)
         
         # Add scrollbar
@@ -226,90 +243,72 @@ class Iteration5(IterationBase):
         scrollbar.pack(side='right', fill='y')
         result_text.configure(yscrollcommand=scrollbar.set)
         
-        result_text.insert('end', "Matrix Comparison\n")
-        result_text.insert('end', "===============\n\n")
-        result_text.insert('end', "This tool will compare eigenvalue computation between:\n")
-        result_text.insert('end', "1. A randomly generated sparse symmetric matrix\n")
-        result_text.insert('end', "2. A matrix loaded from one of the provided files\n\n")
-        result_text.insert('end', "Click the button below to start the comparison.\n\n")
-        
-        def run_comparison():
-            # Clear previous results
-            result_text.delete(1.0, 'end')
-            result_text.insert('end', "Running Matrix Comparison...\n\n")
-            
+        def analyze():
             try:
-                # 1. Generate a random sparse symmetric matrix
-                n = 512  # Small enough for reasonable performance but large enough to satisfy requirements
-                density = 0.01
+                n = n_var.get()
+                p = p_var.get()
                 
-                result_text.insert('end', f"Generating random matrix ({n}x{n}, density={density:.2%})...\n")
-                values_gen, col_indices_gen, row_ptr_gen, n_gen = generate_random_symmetric(n, density)
+                if n >= p:
+                    messagebox.showerror("Error", "For SVD analysis, number of rows (n) must be less than columns (p)")
+                    return
                 
-                # Verify it's symmetric
-                is_sym = verify_symmetry(values_gen, col_indices_gen, row_ptr_gen, n_gen)
-                result_text.insert('end', f"Generated matrix is symmetric: {is_sym}\n")
-                result_text.insert('end', f"Non-zero elements: {len(values_gen)}\n\n")
+                result_text.delete(1.0, 'end')
+                result_text.insert('end', f"Generating random matrix of size {n}x{p}...\n")
                 
-                # 2. Load a matrix from file
-                filename = "Tema5/input/m_rar_sim_2025_512.txt"  # Use a medium-sized file
-                result_text.insert('end', f"Reading matrix from file {filename}...\n")
+                # Create a random dense matrix
+                A = np.random.rand(n, p)
                 
-                try:
-                    n_file, values_file, col_indices_file, row_ptr_file = read_matrix_from_file(filename)
-                    # Verify it's symmetric
-                    is_sym = verify_symmetry(values_file, col_indices_file, row_ptr_file, n_file)
-                    result_text.insert('end', f"File matrix is symmetric: {is_sym}\n")
-                    result_text.insert('end', f"Non-zero elements: {len(values_file)}\n\n")
-                    
-                    # Compare eigenvalue computation
-                    result_text.insert('end', "Computing eigenvalues...\n\n")
-                    
-                    # Generated matrix
-                    start_time = time.time()
-                    lambda_max_gen, v_max_gen, iterations_gen, residual_norm_gen = power_method(
-                        values_gen, col_indices_gen, row_ptr_gen, n_gen
-                    )
-                    end_time = time.time()
-                    result_text.insert('end', "Generated Matrix Results:\n")
-                    result_text.insert('end', f"Maximum eigenvalue: {lambda_max_gen:.8f}\n")
-                    result_text.insert('end', f"Iterations: {iterations_gen}\n")
-                    result_text.insert('end', f"Residual norm: {residual_norm_gen:.8e}\n")
-                    result_text.insert('end', f"Computation time: {end_time - start_time:.2f} seconds\n\n")
-                    
-                    # File matrix
-                    start_time = time.time()
-                    lambda_max_file, v_max_file, iterations_file, residual_norm_file = power_method(
-                        values_file, col_indices_file, row_ptr_file, n_file
-                    )
-                    end_time = time.time()
-                    result_text.insert('end', "File Matrix Results:\n")
-                    result_text.insert('end', f"Maximum eigenvalue: {lambda_max_file:.8f}\n")
-                    result_text.insert('end', f"Iterations: {iterations_file}\n")
-                    result_text.insert('end', f"Residual norm: {residual_norm_file:.8e}\n")
-                    result_text.insert('end', f"Computation time: {end_time - start_time:.2f} seconds\n")
-                    
-                except Exception as e:
-                    result_text.insert('end', f"Error processing file matrix: {str(e)}\n")
-                    import traceback
-                    result_text.insert('end', traceback.format_exc())
-                    
+                # Perform SVD
+                start_time = time.time()
+                U, S, Vt = np.linalg.svd(A, full_matrices=False)
+                end_time = time.time()
+                
+                result_text.insert('end', f"SVD computation completed in {end_time - start_time:.2f} seconds\n\n")
+                
+                # Calculate rank using both methods
+                rank_numpy = np.linalg.matrix_rank(A)
+                rank_custom = custom_rank(S)
+                
+                # Calculate condition number using both methods
+                cond_numpy = np.linalg.cond(A)
+                cond_custom = custom_condition_number(S)
+                
+                # Display results
+                result_text.insert('end', f"Matrix Properties:\n")
+                result_text.insert('end', f"Size: {n}x{p}\n")
+                result_text.insert('end', f"Rank (NumPy): {rank_numpy}\n")
+                result_text.insert('end', f"Rank (Custom): {rank_custom}\n")
+                result_text.insert('end', f"Condition Number (NumPy): {cond_numpy:.2e}\n")
+                result_text.insert('end', f"Condition Number (Custom): {cond_custom:.2e}\n\n")
+                
+                # Display first 10 singular values
+                result_text.insert('end', f"First 10 Singular Values:\n")
+                for i, s in enumerate(S[:10]):
+                    result_text.insert('end', f"σ{i+1}: {s:.8f}\n")
+                
             except Exception as e:
                 result_text.insert('end', f"Error: {str(e)}\n")
                 import traceback
                 result_text.insert('end', traceback.format_exc())
         
-        # Add button to run comparison
-        Button(w, text="Run Comparison", bg="#426E93", fg="white", 
-               command=run_comparison).pack(pady=20)
+        # Add button to analyze
+        Button(control_frame, text="Analyze", bg="#426E93", fg="white", 
+               command=analyze).grid(row=0, column=4, padx=20, pady=10)
     
     @staticmethod
     def open():
+        """Open the main interface window"""
         w = Toplevel()
-        w.geometry("400x300")
+        w.geometry("800x600")
         w.configure(bg="#6F7572")
-        w.title("Iteration 5")
+        w.title("Numerical Methods - Assignment 5")
         
-        Iteration5.newButton(w, 0.5, 0.3, "Generate Random Matrix", "White", "#426E93", Iteration5.generate_random_matrix)
-        Iteration5.newButton(w, 0.5, 0.5, "Analyze File Matrix", "White", "#426E93", Iteration5.analyze_file_matrix)
-        Iteration5.newButton(w, 0.5, 0.7, "Compare Methods", "White", "#426E93", Iteration5.compare_methods)
+        # Create buttons for each functionality
+        Button(w, text="Generate Random Matrix", bg="#426E93", fg="white", 
+               command=Iteration5.generate_random_matrix).pack(pady=20)
+        
+        Button(w, text="Analyze Matrix from File", bg="#426E93", fg="white", 
+               command=Iteration5.analyze_file_matrix).pack(pady=20)
+        
+        Button(w, text="SVD Analysis", bg="#426E93", fg="white", 
+               command=Iteration5.svd_analysis).pack(pady=20)

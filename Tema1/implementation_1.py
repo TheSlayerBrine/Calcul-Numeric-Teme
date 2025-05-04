@@ -2,7 +2,6 @@
 import numpy as np
 from Tema1.polynomials import polynomials
 
-
 def compute_machine_precision():
     m = 1.0
     while 1.0 + 10**-m != 1.0:

@@ -7,6 +7,7 @@ def newton_schulz(A, epsilon = 1e-10, kmax = 1000):
     Returns:
         (V, iterations): V approximates A⁻¹, iterations is the number of iterations.
     """
+
     n = A.shape[0]
     I = np.eye(n)
     A_inf = np.linalg.norm(A, ord=np.inf)
@@ -106,18 +107,19 @@ def li_li_variant2_inversion(A, epsilon=1e-10, kmax=1000):
     print("Divergență: numărul maxim de iterații atins.")
     return None, k
 
+
 def non_square_newton_schulz(A, epsilon=1e-10, kmax=1000):
     """
     Pseudoinverse
     Approach: For full column rank matrices (m ≥ n), computes (A^T A)^(-1) A^T
               For full row rank matrices (m < n), computes A^T (A A^T)^(-1)
-    
+
     Parameters:
         A: Input rectangular matrix (mxn)
         method: 'newton_schulz', 'li_li_v1', or 'li_li_v2'
     """
     m, n = A.shape
-    
+
     if m >= n:  # More rows than columns - assume full column rank
         # Form square matrix A^T A (n×n)
         ATA = A.T @ A
@@ -125,17 +127,17 @@ def non_square_newton_schulz(A, epsilon=1e-10, kmax=1000):
         V, iterations = newton_schulz(ATA, epsilon, kmax)
         # Form pseudoinverse as (A^T A)^(-1) A^T
         X = V @ A.T
-        
+
     else:  # More columns than rows - assume full row rank
         # Form square matrix A A^T (m×m)
         AAT = A @ A.T
-        
+
         # Get inverse of AAT using one of the iterative methods
         V, iterations = newton_schulz(AAT, epsilon, kmax)
-            
+
         # Form pseudoinverse as A^T (A A^T)^(-1)
         X = A.T @ V
-    
+
     # Validate the solution - the residual norms for rectangular matrices
     # If m≥n: ||X A - I_n||_1   (right inverse property)
     # If m<n: ||A X - I_m||_1   (left inverse property)
@@ -145,8 +147,8 @@ def non_square_newton_schulz(A, epsilon=1e-10, kmax=1000):
     else:
         I_m = np.eye(m)
         rectangular_norm = np.linalg.norm(A @ X - I_m, ord=1)
-    
-    return X, iterations, rectangular_norm  
+
+    return X, iterations, rectangular_norm
 
 
 def generate_special_matrix(n):
@@ -154,7 +156,10 @@ def generate_special_matrix(n):
     for i in range(n-1):
         A[i, i+1] = 2  # Set superdiagonal elements to 2
     return A
+A = generate_special_matrix(50)
 
+
+X,it = newton_schulz(A, 1e-10, 1000)
 
 
 def analyze_special_matrix_inverse(max_n=10, epsilon=1e-10, kmax=1000):
@@ -222,12 +227,14 @@ def generate_inverse_from_formula(n, formula_function=None):
     # Use the provided formula function or default to the known formula
     if formula_function is None:
         formula_function = lambda i, j: 0 if i > j else 1 if i == j else (-2)**(j-i)
-    
+
     for i in range(n):
         for j in range(n):
             inverse[i, j] = formula_function(i, j)
             
     return inverse
+
+
 
 def compare_formula_vs_iterative(n, method='newton_schulz', epsilon=1e-10, kmax=1000, formula_function=None):
     
@@ -236,7 +243,6 @@ def compare_formula_vs_iterative(n, method='newton_schulz', epsilon=1e-10, kmax=
     
     # Generate inverse using the formula
     formula_inverse = generate_inverse_from_formula(n, formula_function)
-    
     # Calculate inverse using the specified iterative method
     if method == 'newton_schulz':
         iterative_inverse, iterations = newton_schulz(A, epsilon, kmax)
@@ -246,7 +252,8 @@ def compare_formula_vs_iterative(n, method='newton_schulz', epsilon=1e-10, kmax=
         iterative_inverse, iterations = li_li_variant2_inversion(A, epsilon, kmax)
     else:
         raise ValueError(f"Unknown method: {method}")
-    
+    norm = np.linalg.norm((-2) ** (42 - 19) - iterative_inverse[19][42])
+    print(norm)
     if iterative_inverse is None:
         return A, formula_inverse, None, None, iterations
     

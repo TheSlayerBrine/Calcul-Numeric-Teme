@@ -1,5 +1,5 @@
 ﻿import numpy as np
-from typing import Tuple
+from typing import Tuple, Dict, Any
 from Tema5.sparse_matrix import (get_value, matvec)
 
 
@@ -98,4 +98,35 @@ def calculate_residual_norm(values, col_indices, row_ptr, n, lambda_max, v_max):
     """
     residual = matvec(values, col_indices, row_ptr, n, n, v_max) - lambda_max * v_max
     return np.linalg.norm(residual)
+
+
+def custom_rank(singular_values: np.ndarray, tol: float = 1e-10) -> int:
+    """
+    Calculate the rank of a matrix using its singular values.
+    
+    Parameters:
+        singular_values: Array of singular values
+        tol: Tolerance for considering a singular value as non-zero
+        
+    Returns:
+        int: Matrix rank
+    """
+    return int(np.sum(singular_values > tol))
+
+
+def custom_condition_number(singular_values: np.ndarray) -> float:
+    """
+    Calculate the condition number of a matrix using its singular values.
+    
+    Parameters:
+        singular_values: Array of singular values
+        
+    Returns:
+        float: Condition number (ratio of largest to smallest singular value)
+    """
+    # Filter out very small singular values to avoid division by zero
+    nonzero_singular_values = singular_values[singular_values > 1e-15]
+    if len(nonzero_singular_values) == 0:
+        return float('inf')
+    return float(np.max(nonzero_singular_values) / np.min(nonzero_singular_values))
 
